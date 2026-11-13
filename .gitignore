@@ -1,0 +1,6 @@
+/target
+.env
+
+# The api call count, which is local bookkeeping and not worth sharing.
+usage.json
+
