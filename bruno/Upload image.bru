@@ -1,0 +1,53 @@
+meta {
+  name: Upload image
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/upload
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  x-upload-secret: {{uploadSecret}}
+}
+
+body:multipart-form {
+  file: @file(files/sample.png)
+}
+
+assert {
+  res.status: eq 201
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    const url = res.getBody().url;
+
+    bru.setVar("lastUploadUrl", url);
+    bru.setVar("lastUploadName", url.split("/").pop());
+  }
+}
+
+tests {
+  test("answers 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("returns a url pointing back at this service", function() {
+    expect(res.getBody().url).to.be.a("string");
+    expect(res.getBody().url).to.contain("/images/");
+  });
+}
+
+docs {
+  The happy path. Needs a working GH_TOKEN, GH_OWNER, and GH_REPO on the
+  server, otherwise this comes back 502 and the reason is printed in the
+  terminal running cargo run.
+
+  The URL that comes back points at this service, not at GitHub, which is
+  what lets the repo be private. It is saved as {{lastUploadUrl}} so the
+  next request can open it.
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Fetch uploaded image
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{lastUploadUrl}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("serves the image back", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getHeader("content-type")).to.match(/^image\//);
+  });
+
+  test("is cached hard", function() {
+    expect(res.getHeader("cache-control")).to.contain("immutable");
+  });
+}
+
+docs {
+  Opens the URL the last upload returned. No secret is sent, which is the
+  point: reads are open so the URL works in a browser or an img tag, while
+  the repo itself stays private and the token stays on the server.
+
+  Run "Upload image" first, this one has nothing to fetch on its own.
+
+  A 404 here usually means the commit landed on a branch other than the one
+  the server is reading from, so check GH_BRANCH.
+}

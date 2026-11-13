@@ -1,0 +1,34 @@
+meta {
+  name: Delete image
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/images/{{lastUploadName}}
+  body: none
+  auth: none
+}
+
+headers {
+  x-upload-secret: {{uploadSecret}}
+}
+
+assert {
+  res.status: eq 204
+}
+
+tests {
+  test("answers 204 with no body", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
+
+docs {
+  Removes the image the first request uploaded, which writes a second commit
+  to the repo. The file stops being reachable, but the commit that added it
+  is still in the history, so treat this as unpublishing rather than as
+  wiping the bytes off GitHub.
+  
+  Run "Upload image" first, this needs a name to delete.
+}

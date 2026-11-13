@@ -1,0 +1,44 @@
+meta {
+  name: Api usage
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/usage
+  body: none
+  auth: none
+}
+
+headers {
+  x-upload-secret: {{uploadSecret}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("reports where the github budget stands", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().remaining).to.be.a("number");
+    expect(res.getBody().percent_used).to.be.at.least(0);
+  });
+}
+
+docs {
+  How much of the 5000 an hour is gone, and when it comes back.
+
+  limit, used, remaining, and the percentages are GitHub's own numbers,
+  taken from the headers on its replies. calls_this_window and
+  calls_since_boot are this service's own count, so you can tell your share
+  of the spending from everyone else's.
+
+  resets_at is the UTC epoch second GitHub sent, resets_at_utc is the same
+  moment written out, and resets_in counts the gap from now. The window
+  opens on the first request of the hour, it does not follow the clock.
+
+  This request costs nothing. GET /rate_limit is the one call GitHub does
+  not charge for, and it is what answers this when the numbers have gone
+  cold.
+}
